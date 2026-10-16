@@ -17,8 +17,35 @@ def page(path,title,desc,body):
  url=base+'/'+path; urls.append(url); target=O/path/'index.html';target.parent.mkdir(parents=True,exist_ok=True)
  target.write_text(f'''<!doctype html><html lang="sr-Latn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{e(title)} | Evanđeoska crkva Jagodina</title><meta name="description" content="{e(desc)}"><meta name="robots" content="{'noindex,nofollow' if preview else 'index,follow'}"><link rel="canonical" href="{url}"><meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}"><meta property="og:url" content="{url}"><meta property="og:type" content="website"><meta property="og:locale" content="sr_RS"><meta name="theme-color" content="#b72c13"><link rel="apple-touch-icon" href="/app-icon.png"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/app-icon.png"><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script><script type="application/ld+json">{json.dumps({'@context':'https://schema.org','@type':'Church','name':s['name'],'url':base,'email':s['email']}).replace('<','\\u003c')}</script></head><body><a class="skip" href="#main">Pređi na sadržaj</a><header><a class="brand" href="/"><img class="brand-logo" src="/logo.png" alt="" width="56" height="72"><span>Evanđeoska crkva<small>J A G O D I N A</small></span></a><button class="menu" aria-expanded="false" aria-controls="nav">Meni ☰</button><nav id="nav">{nav}<a class="lang-switch" href="/en/{path}" lang="en" aria-label="Switch to English">EN</a><a class="navlive" href="/uzivo/">Prenos ↗</a></nav></header><main id="main">{body}</main><footer><div><a class="brand" href="/">Evanđeoska crkva Jagodina</a><p>Dobro došli! Zajedno slušamo i delimo Božiju reč.</p><a href="mailto:{s['email']}">{s['email']}</a></div><div><strong>Istražite</strong>{''.join(f'<a href="/{a}/">{b}</a>' for a,b,_ in sections)}</div><div><strong>Ostanimo u kontaktu</strong><p>Za informacije o poseti i bogosluženjima<br>pišite nam imejlom.</p><a href="/instalacija/">Dodajte sajt na telefon ↗</a><a href="/privatnost/">Privatnost</a><a href="/admin/">Uređivanje sadržaja ↗</a></div><aside>© {__import__('datetime').date.today().year} Evanđeoska crkva Jagodina <span>{'Privatni pregled • sadržaj je u pripremi' if preview else 'Sva prava zadržana.'}</span></aside></footer></body></html>''')
 def empty(text):return f'<div class="empty"><span>✧</span><h3>Sadržaj je u pripremi</h3><p>{text}</p><a href="mailto:{s["email"]}">Kontaktirajte nas ↗</a></div>'
+def youtube_thumbnail(url):
+    """YouTube preview bez dodatnog API-ja ili plaćene usluge."""
+    from urllib.parse import urlparse, parse_qs
+    if not url:
+        return ''
+    try:
+        u = urlparse(url.strip())
+        host = (u.hostname or '').lower()
+        parts = [x for x in u.path.split('/') if x]
+        if host in ('youtube.com', 'www.youtube.com', 'm.youtube.com'):
+            video_id = parse_qs(u.query).get('v', [''])[0] if u.path == '/watch' else (parts[1] if len(parts)>1 and parts[0] in ('live','shorts','embed') else '')
+        elif host in ('youtu.be', 'www.youtu.be'):
+            video_id = parts[0] if parts else ''
+        else:
+            return ''
+        if not re.fullmatch(r'[A-Za-z0-9_-]{11}', video_id):
+            return ''
+        return f'<img src="https://i.ytimg.com/vi/{video_id}/hqdefault.jpg" alt="YouTube naslovna slika" loading="lazy" style="display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:16px">'
+    except (ValueError, IndexError):
+        return ''
+
 def cards(items):
- return '<div class="results">'+''.join(f'<a class="result" href="/objave/{e(d["slug"])}/" data-search="{e(" ".join(str(v) for v in d.values()).lower())}" data-type="{e(d.get("type",""))}"><span class="eyebrow">{e(d.get("type","Materijal"))} · {e(d.get("date",""))}</span><h3>{e(d["title"])}</h3><p>{e(d.get("description",""))}</p><span>Otvori materijal ↗</span></a>' for d in items)+'</div>'
+    return '<div class="results">'+''.join(
+        f'<a class="result" href="/objave/{e(d["slug"])}/" data-search="{e(" ".join(str(v) for v in d.values()).lower())}" data-type="{e(d.get("type",""))}">'
+        + youtube_thumbnail(d.get('youtube',''))
+        + f'<span class="eyebrow">{e(d.get("type","Materijal"))} · {e(d.get("date",""))}</span><h3>{e(d["title"])}</h3><p>{e(d.get("description",""))}</p><span>Otvori materijal ↗</span></a>'
+        for d in items
+    )+'</div>'
+
 def head(label,title,desc=''):return f'<section class="pagehead"><p class="eyebrow">{label}</p><h1>{title}</h1><p>{desc}</p></section>'
 # Fotografije se dodaju/uklanjaju preko Pages CMS > Fotografije crkve.
 # Svaki JSON zapis prikazuje jednu fotografiju. Izbrisani zapis se vise ne prikazuje.
