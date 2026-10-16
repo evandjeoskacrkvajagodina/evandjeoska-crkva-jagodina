@@ -3,5 +3,5 @@
   "title": "Fotografija 1",
   "image": "/media/crkva-1.jpg",
   "order": 1,
-  "visible": true
+  "visible": false
 }
