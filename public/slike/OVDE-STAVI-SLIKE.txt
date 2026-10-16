@@ -1,0 +1,1 @@
+Stavi svoje fotografije ovde pod imenima: crkva-1.jpg, crkva-2.jpg, crkva-3.jpg. Posle pokreni zadatak Napravi sajt u VS Code i osvezi pregled. Mozes da stavis jednu, dve ili tri slike. Za svaku sliku biraj fotografije za koje imas dozvolu objavljivanja.

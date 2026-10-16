@@ -1,0 +1,1 @@
+{"version":"2.0.0","tasks":[{"label":"Napravi sajt","type":"shell","command":"python","args":["-X","utf8","scripts/build.py"],"group":{"kind":"build","isDefault":true},"problemMatcher":[]},{"label":"Pokreni lokalni pregled","type":"shell","command":"python","args":["-X","utf8","scripts/dev.py"],"problemMatcher":[]}]}

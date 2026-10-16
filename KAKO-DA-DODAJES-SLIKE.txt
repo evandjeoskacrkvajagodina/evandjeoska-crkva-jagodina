@@ -1,0 +1,18 @@
+FOTOGRAFIJE SAJTA — JEDNOSTAVNO
+
+Šest fotografija je već ugrađeno. Ne treba da ih kopiraš.
+
+Kada GitHub i Pages CMS budu povezani:
+1. Otvori https://pagescms.org/ i prijavi se preko GitHub-a.
+2. Izaberi repozitorijum crkve.
+3. U meniju izaberi Fotografije crkve.
+4. Za novu sliku: New / Add, unesi jedinstven slug (npr. crkva-nedelja), naslov, izaberi sliku i redosled, pa Save.
+5. Za uklanjanje: otvori zapis slike i izaberi Delete ili isključi Prikaži na početnoj strani.
+6. Cloudflare treba da bude povezan sa GitHub-om da bi objavio izmene nakon čuvanja.
+
+VAŽNO: U lokalnom VS Code projektu promene iz Pages CMS-a neće biti vidljive dok ne preuzmeš nove GitHub izmene.
+
+ZA LOKALNI PREGLED (Windows):
+Terminal > Run Task > Napravi sajt
+Terminal > New Terminal > python -m http.server 8003 -d dist
+U Chrome-u otvori http://localhost:8003

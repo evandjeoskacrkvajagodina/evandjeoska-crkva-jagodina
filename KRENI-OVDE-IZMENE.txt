@@ -1,0 +1,7 @@
+NOVI MENI + SR/EN + 6 SLIKA
+1. Prekopiraj svoje crkva-1.jpg do crkva-6.jpg iz STAROG foldera public/slike u OVAJ public/slike.
+2. U VS Code: Terminal > Run Task > Napravi sajt.
+3. Zatvori stari server sa Ctrl+C, pa iz OVOG foldera pokreni python -m http.server 8001 -d dist
+4. Otvori localhost:8001 (SR) ili localhost:8001/en/ (EN).
+5. Newsletter i Podrzi nas su za sada informativne stranice - nema integrisane prijave ni placanja.
+6. Pages CMS radi kada povezes GitHub.

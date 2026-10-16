@@ -1,0 +1,24 @@
+EVANĐEOSKA CRKVA JAGODINA — UPUTSTVO
+
+1. Raspakujte ZIP i otvorite folder u VS Code-u.
+2. Terminal > Run Task > Napravi sajt.
+3. Pokrenite: python -m http.server 8000 -d dist
+4. Otvorite: http://localhost:8000
+
+FOTOGRAFIJE ODMAH, BEZ CMS-a:
+U folder public/slike ubacite fotografije pod nazivima:
+crkva-1.jpg, crkva-2.jpg, crkva-3.jpg
+Zatim ponovo pokrenite zadatak Napravi sajt i osvežite stranicu Ctrl+Shift+R.
+
+PANEL (tek posle povezivanja GitHub + Cloudflare):
+Pages CMS: https://app.pagescms.org/ — povežite repozitorijum u kojem je ovaj projekat.
+Početna stranica i fotografije -> Fotografija 1/2/3 (otpremanje slika)
+Objave i materijali -> Google Drive link (podesite Drive: Anyone with the link -> Viewer).
+CMS nije samostalno aktivan dok ne povežete GitHub i Cloudflare Pages.
+
+CLOUDFLARE PAGES PODEŠAVANJA:
+GitHub repozitorijum: uvezite projekat sa svim fajlovima.
+Framework preset: None
+Build command: python3 -X utf8 scripts/build.py
+Build output directory: dist
+Ne povezujte pravi domen dok ne proverite izgled na pages.dev adresi.

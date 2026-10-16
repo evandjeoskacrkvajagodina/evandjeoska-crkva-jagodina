@@ -1,0 +1,165 @@
+media:
+  input: public/media
+  output: /media
+content:
+  - name: gallery
+    label: Fotografije crkve
+    type: collection
+    path: content/gallery
+    format: json
+    filename: "{fields.slug}.json"
+    fields:
+      - name: slug
+        label: Naziv fajla (npr. nedeljno-bogosluzenje)
+        type: string
+        required: true
+      - name: title
+        label: Naziv fotografije
+        type: string
+        required: true
+      - name: image
+        label: Fotografija (dodaj novu ili izaberi postojeću)
+        type: image
+        required: true
+      - name: order
+        label: Redosled (1, 2, 3...)
+        type: number
+        default: 10
+      - name: visible
+        label: Prikaži na početnoj strani
+        type: boolean
+        default: true
+  - name: posts
+    label: Objave i materijali
+    type: collection
+    path: content/posts
+    format: json
+    filename: "{fields.slug}.json"
+    fields:
+      - name: title
+        label: "Naslov"
+        type: string
+        required: true
+      - name: slug
+        label: "URL oznaka (mala slova i crtice)"
+        type: string
+        required: true
+      - name: draft
+        label: "Nacrt — nije javno objavljen"
+        type: boolean
+        default: true
+      - name: section
+        label: "Odeljak"
+        type: select
+        required: true
+        options:
+          values: [propovedi, decja-sluzba, omladinska-sluzba, duhovni-rast, drugim-crkvama, dogadjaji, biblioteka]
+      - name: date
+        label: "Datum"
+        type: date
+      - name: description
+        label: "Kratak opis"
+        type: text
+      - name: author
+        label: "Autor / govornik"
+        type: string
+      - name: scripture
+        label: "Biblijski tekst"
+        type: string
+      - name: series
+        label: "Serija"
+        type: string
+      - name: topic
+        label: "Tema"
+        type: string
+      - name: ministry
+        label: "Služba"
+        type: string
+      - name: type
+        label: "Tip materijala"
+        type: string
+      - name: language
+        label: "Jezik"
+        type: string
+      - name: age
+        label: "Uzrast"
+        type: string
+      - name: youtube
+        label: "YouTube link"
+        type: string
+      - name: drive
+        label: "Google Drive link (javni PDF)"
+        type: string
+      - name: file
+        label: "Dokument"
+        type: file
+      - name: location
+        label: "Lokacija događaja"
+        type: string
+      - name: body
+        label: "Sadržaj (običan tekst)"
+        type: text
+  - name: settings
+    label: Podaci crkve
+    type: file
+    path: content/settings.json
+    format: json
+    fields:
+      - name: name
+        label: "Naziv"
+        type: text
+      - name: email
+        label: "Imejl"
+        type: text
+      - name: domain
+        label: "Domen"
+        type: text
+      - name: address
+        label: "Adresa"
+        type: text
+      - name: schedule
+        label: "Termini"
+        type: text
+      - name: about
+        label: "O crkvi"
+        type: text
+      - name: mission
+        label: "Vizija i misija"
+        type: text
+      - name: beliefs
+        label: "U šta verujemo"
+        type: text
+      - name: leadership
+        label: "Rukovodstvo"
+        type: text
+      - name: youtube
+        label: "Zvanični YouTube kanal"
+        type: text
+
+  - name: homepage
+    label: Početna stranica i fotografije
+    type: file
+    path: content/homepage.json
+    format: json
+    fields:
+      - name: title
+        label: "Glavni naslov"
+        type: text
+      - name: accent
+        label: "Drugi red naslova"
+        type: text
+      - name: description
+        label: "Uvodni tekst"
+        type: text
+      - name: cta
+        label: "Tekst dugmeta"
+        type: text
+      - name: title_en
+        label: "Main title (English)"
+        type: text
+      - name: accent_en
+        label: "Second title line (English)"
+        type: text
+      - name: description_en
+        label: "Intro text (English)"
+        type: text

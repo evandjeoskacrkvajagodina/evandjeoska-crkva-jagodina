@@ -1,0 +1,6 @@
+1. Otvori folder crkva-jagodina u VS Code.
+2. Pocetni tekstovi: content/homepage.json
+3. Fotografije: public/slike/crkva-1.jpg, crkva-2.jpg, crkva-3.jpg
+4. U VS Code idi na Terminal > Run Task > Napravi sajt.
+5. Osvezi http://localhost:8000 (ako ti server jos radi); ako ne radi, pokreni python -m http.server 8000 -d dist.
+6. Ne menjaj direktno dist, jer se ponovo pravi.

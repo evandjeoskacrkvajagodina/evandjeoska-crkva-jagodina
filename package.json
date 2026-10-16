@@ -1,0 +1,8 @@
+{
+  "name": "ecj-website",
+  "private": true,
+  "scripts": {
+    "build": "python3 -X utf8 scripts/build.py",
+    "dev": "python3 -X utf8 scripts/dev.py"
+  }
+}
