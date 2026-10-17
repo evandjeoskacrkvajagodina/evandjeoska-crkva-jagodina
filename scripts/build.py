@@ -62,10 +62,39 @@ hero=f'''<section class="hero home-hero"><div class="hero-copy"><p class="eyebro
 body=hero
 sermons=[d for d in records if d.get('section')=='propovedi']
 encouragements=[d for d in records if d.get('section')=='duhovni-rast']
+
+def youtube_embed(url):
+    """YouTube player bez dodatnih usluga. Podrzava watch, youtu.be, live i shorts."""
+    from urllib.parse import urlparse, parse_qs
+    if not isinstance(url, str) or not url.strip():
+        return ''
+    u=urlparse(url.strip())
+    host=(u.hostname or '').lower()
+    parts=[a for a in u.path.split('/') if a]
+    vid=''
+    if host in ('youtube.com','www.youtube.com','m.youtube.com'):
+        if u.path=='/watch': vid=parse_qs(u.query).get('v',[''])[0]
+        elif len(parts)>1 and parts[0] in ('live','shorts','embed'): vid=parts[1]
+    elif host in ('youtu.be','www.youtu.be') and parts:
+        vid=parts[0]
+    if not re.fullmatch(r'[A-Za-z0-9_-]{11}',vid):
+        return ''
+    return ('<div class="service-video" style="aspect-ratio:16/9;width:100%;margin:16px 0 22px">'
+            '<iframe loading="lazy" style="width:100%;height:100%;border:0;border-radius:12px" '
+            'src="https://www.youtube-nocookie.com/embed/'+vid+'" '
+            'title="Pogledajte bogosluzenje" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
+
 def latest(items,label,desc):
  if items:
-  d=items[0];return '<a class="latest-card" href="/objave/'+e(d['slug'])+'/"><span class="eyebrow">'+label+'</span><h3>'+e(d['title'])+'</h3><p>'+e(d.get('description',''))+'</p><b>Pročitajte više ↗</b></a>'
+  d=items[0]
+  video=youtube_embed(d.get('youtube',''))
+  if video:
+   return ('<div class="latest-card"><span class="eyebrow">'+label+'</span>'
+           +video+'<h3>'+e(d['title'])+'</h3><p>'+e(d.get('description',''))
+           +'</p><a href="/objave/'+e(d['slug'])+'/">Detalji bogosluzenja ↗</a></div>')
+  return '<a class="latest-card" href="/objave/'+e(d['slug'])+'/"><span class="eyebrow">'+label+'</span><h3>'+e(d['title'])+'</h3><p>'+e(d.get('description',''))+'</p><b>Pročitajte više ↗</b></a>'
  return '<div class="latest-card"><span class="eyebrow">'+label+'</span><h3>Sadržaj je u pripremi.</h3><p>'+desc+'</p></div>'
+
 body+='<section class="section watch-section"><div class="section-heading"><div><p class="eyebrow">BOGOSLUŽENJA I PROPOVEDI</p><h2>Pratite naše poslednje bogosluženje.</h2><p>Pogledajte snimke i propovedi naše crkve.</p></div><a class="button" href="/uzivo/">Bogosluženje uživo ↗</a></div><div class="latest-grid">'+latest(sermons,'POSLEDNJA PROPOVED','Ovde će se prikazati najnovija propoved kada dodamo YouTube snimak.')+'<a class="latest-card" href="/propovedi/"><span class="eyebrow">VIDEO ARHIVA</span><h3>Propovedi i prethodna bogosluženja</h3><p>Pregledajte dostupne video-snimke i biblijske poruke.</p><b>Pogledajte propovedi ↗</b></a></div></section>'
 body+='<section class="section ministries-section"><div class="section-heading"><div><p class="eyebrow">MATERIJALI I SLUŽBE</p><h2>Resursi za sve generacije.</h2></div><a href="/biblioteka/">Cela biblioteka ↗</a></div><div class="ministries"><a href="/decja-sluzba/" class="kids"><span>01</span><small>DEČJI RAD</small><h3>Resursi za dečji rad</h3><p>Biblijske lekcije, aktivnosti i materijali za učitelje i roditelje.</p><b>Otvori resurse ↗</b></a><a href="/omladinska-sluzba/" class="youth"><span>02</span><small>OMLADINSKI RAD</small><h3>Resursi za omladinski rad</h3><p>Biblijske pouke, razgovori i materijali za mlade.</p><b>Otvori resurse ↗</b></a><a href="/biblioteka/" class="churches"><span>03</span><small>MUZIKA I SLAVLJENJE</small><h3>Slavljenje našeg tima</h3><p>Pesme i snimci našeg tima za slavljenje, kada ih objavimo.</p><b>Pogledaj biblioteku ↗</b></a></div></section><section class="section"><div class="section-heading"><div><p class="eyebrow">DUHOVNI RAST</p><h2>Ohrabrenja iz Božije reči.</h2></div><a href="/duhovni-rast/">Sva ohrabrenja ↗</a></div><div class="latest-grid">'+latest(encouragements,'NAJNOVIJE OHRABRENJE','Ovde ćemo objavljivati mesečna ohrabrenja i biblijska razmišljanja.')+'<a class="latest-card" href="/biblioteka/"><span class="eyebrow">BIBLIOTEKA</span><h3>Materijali za proučavanje</h3><p>Pronađite pouke i druge resurse koji će vam pomoći u proučavanju Biblije.</p><b>Istražite biblioteku ↗</b></a></div></section><section class="visit"><p class="eyebrow">DOBRO DOŠLI U JAGODINU</p><h2>Rado ćemo vas upoznati.</h2><p>Svi su dobrodošli. Kontaktirajte nas ili saznajte više o našoj crkvi.</p><a class="button" href="/kontakt/">Kontaktirajte nas ↗</a></section>'
 page('','Dobro došli','Evanđeoska crkva Jagodina. Propovedamo Jevanđelje o Isusu Hristu. Svi su dobrodošli. Bog voli sve ljude.',body)
@@ -96,7 +125,7 @@ for d in records:
  for key,label in [('youtube','Pogledajte na YouTube-u'),('file','Otvorite / preuzmite materijal'),('drive','Otvorite PDF na Google Drive-u')]:
   u=d.get(key,'')
   if u and (u.startswith('https://') or u.startswith('/media/')): actions+=f'<p><a class="button" href="{e(u)}" rel="noopener">{label} ↗</a></p>'
- page('objave/'+d['slug']+'/',d['title'],d.get('description',''),head(d.get('type',''),e(d['title']),e(d.get('description','')))+'<article class="section reading"><p>'+e(d.get('date',''))+' · '+e(d.get('author',''))+'</p>'+text+actions+'</article>')
+ page('objave/'+d['slug']+'/',d['title'],d.get('description',''),head(d.get('type',''),e(d['title']),e(d.get('description','')))+'<article class="section reading">'+youtube_embed(d.get('youtube',''))+'<p>'+e(d.get('date',''))+' · '+e(d.get('author',''))+'</p>'+text+actions+'</article>')
 page('admin/','Uređivanje sadržaja','Pristup uredničkom panelu',head('UREDNICI','Uređivanje sadržaja')+'<section class="section reading"><p>Sadržaj se uređuje kroz Pages CMS, uz prijavu i odobren pristup GitHub repozitorijumu. Povezivanje repozitorijuma za ovaj projekat još nije završeno.</p><a class="button" href="https://app.pagescms.org/" rel="noopener">Otvorite Pages CMS ↗</a><p>Promene nisu moguće bez odgovarajućih dozvola. Ne unosite lozinke na ovom sajtu.</p></section>')
 page('instalacija/','Sajt na telefonu','Dodajte sajt na početni ekran',head('SAJT KAO APLIKACIJA','Na vašem početnom ekranu')+'<section class="section reading"><h2>Android</h2><p>Otvorite sajt u Chrome-u. U meniju izaberite „Dodaj na početni ekran“ ili „Instaliraj aplikaciju“, ako je ponuđeno.</p><h2>iPhone i iPad</h2><p>Otvorite sajt u Safari-ju, dodirnite dugme za deljenje i izaberite „Dodaj na početni ekran“.</p><p>Za materijale i YouTube snimke potrebna je internet veza. Dostupnost instalacije zavisi od pregledača; privatni pregled može zahtevati prijavu.</p></section>')
 page('privatnost/','Privatnost','Informacije o privatnosti',head('PRIVATNOST','Vaši podaci')+'<section class="section reading"><p>Ova verzija nema kontakt obrazac, naloge posetilaca niti analitičke alate. Ne tražimo podatke o deci. Kontakt putem imejla obrađuje se preko imejl servisa.</p><p>YouTube i drugi spoljni servisi otvaraju se tek izborom njihovog linka i imaju sopstvene politike privatnosti. Hosting obrađuje tehničke podatke potrebne za isporuku sajta. Privatni pregled koristi i prijavu pružaoca pregleda.</p><p>Za pitanja pišite na '+s['email']+'. Ovaj tekst treba ponovo pregledati pre dodavanja novih servisa.</p></section>')
