@@ -135,6 +135,9 @@ content:
       - name: youtube
         label: "Zvanični YouTube kanal"
         type: text
+              - name: live_url
+        label: "YouTube link za prenos uživo"
+        type: string
 
   - name: homepage
     label: Početna stranica i fotografije
