@@ -53,7 +53,7 @@ content:
         type: select
         required: true
         options:
-          values: [propovedi, decja-sluzba, omladinska-sluzba, duhovni-rast, drugim-crkvama, dogadjaji, biblioteka]
+          values: [propovedi, decja-sluzba, omladinska-sluzba, slavljenje, duhovni-rast, drugim-crkvama, dogadjaji, biblioteka]
       - name: date
         label: "Datum"
         type: date
@@ -135,7 +135,7 @@ content:
       - name: youtube
         label: "Zvanični YouTube kanal"
         type: text
-              - name: live_url
+      - name: live_url
         label: "YouTube link za prenos uživo"
         type: string
 
@@ -145,6 +145,15 @@ content:
     path: content/homepage.json
     format: json
     fields:
+      - name: service_image
+        label: "Kartica: Bogosluženja — fotografija"
+        type: image
+      - name: resources_image
+        label: "Kartica: Resursi — fotografija"
+        type: image
+      - name: mentorship_image
+        label: "Kartica: Mentorstvo — fotografija"
+        type: image
       - name: title
         label: "Glavni naslov"
         type: text
