@@ -1,0 +1,27 @@
+name: Osvezi nedeljna bogosluzenja
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 6 * * *'
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Preuzmi zavrsene prenose
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          YOUTUBE_CHANNEL_HANDLE: '@EvandjeoskaCrkvaJagodina'
+        run: python scripts/sync_youtube.py
+      - name: Sacuvaj arhivu ako se promenila
+        run: |
+          git add content/youtube-services.json
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Automatska YouTube arhiva bogosluzenja'
+            git push
+          fi

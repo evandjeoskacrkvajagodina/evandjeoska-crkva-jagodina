@@ -53,7 +53,7 @@ content:
         type: select
         required: true
         options:
-          values: [propovedi, decja-sluzba, omladinska-sluzba, slavljenje, duhovni-rast, drugim-crkvama, dogadjaji, biblioteka]
+          values: [propovedi, decja-sluzba, omladinska-sluzba, slavljenje, duhovni-rast, drugim-crkvama, dogadjaji, biblioteka, konferencije]
       - name: date
         label: "Datum"
         type: date
@@ -145,6 +145,12 @@ content:
     path: content/homepage.json
     format: json
     fields:
+      - name: weekly_image
+        label: "Kartica: Nedeljna bogosluženja — fotografija"
+        type: image
+      - name: conference_image
+        label: "Kartica: Konferencije i predavanja — fotografija"
+        type: image
       - name: service_image
         label: "Kartica: Bogosluženja — fotografija"
         type: image

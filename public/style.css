@@ -953,3 +953,9 @@ footer.modern-footer{background:#171f2c!important;color:#f6f4ef!important;max-wi
 
 /* Resursi su posebne oblasti; propovedi ostaju u Bogosluženjima. */
 .resource-landing{padding-top:34px;padding-bottom:80px}.resource-category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.resource-category{display:flex;flex-direction:column;min-height:185px;border-radius:12px;background:#f8f6f3;border:1px solid #e6ded8;padding:30px;text-decoration:none;color:#25201e}.resource-category:hover{border-color:#b72c13;transform:translateY(-2px)}.resource-category strong{font-size:25px}.resource-category p{line-height:1.65;color:#635e59}.resource-category span{margin-top:auto;color:#ac3823;font-weight:700}.footer-social{display:flex;align-items:center;gap:14px;margin-top:22px}.modern-footer .footer-social a{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid rgba(255,255,255,.3);border-radius:50%}.footer-social a:hover{background:#a43826}.footer-social svg{width:22px;height:22px;fill:currentColor;color:#fff}@media(max-width:850px){.resource-category-grid{grid-template-columns:1fr}.resource-category{min-height:140px}}
+
+/* Bogosluzenja: dve kartice sa fotografijama preko Pages CMS */
+.service-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.service-category-grid .resource-category{overflow:hidden}
+.service-category-grid .path-image{height:190px;width:100%;object-fit:cover;border-radius:10px;margin-bottom:20px}
+@media(max-width:700px){.service-category-grid{grid-template-columns:1fr}}

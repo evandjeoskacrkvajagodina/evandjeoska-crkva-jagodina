@@ -3,7 +3,7 @@ from pathlib import Path
 P=Path(__file__).resolve().parent.parent; O=P/'dist'; shutil.rmtree(O,ignore_errors=True); O.mkdir(); shutil.copytree(P/'public',O,dirs_exist_ok=True)
 home=json.loads((P/'content/homepage.json').read_text(encoding='utf-8')); s=json.loads((P/'content/settings.json').read_text()); base=os.environ.get('SITE_URL',s['domain']).rstrip('/'); preview=os.environ.get('PRODUCTION')!='1'
 e=lambda x:html.escape(str(x),quote=True)
-sections=[('o-nama','O nama','Upoznajte našu crkvu'),('uzivo','Bogosluženje uživo','Budimo zajedno, gde god da ste'),('propovedi','Propovedi','Slušajte. Proučavajte. Rastite.'),('decja-sluzba','Dečja služba','Mali koraci. Velike istine.'),('omladinska-sluzba','Omladinska služba','Vera u svakodnevnom životu'),('duhovni-rast','Duhovni rast','Prostor za rast u Božijoj reči'),('biblioteka','Biblioteka','Dobri materijali. Na jednom mestu.'),('drugim-crkvama','Drugim crkvama','Resursi za zajedničko služenje'),('dogadjaji','Događaji','Vreme za zajedništvo'),('kontakt','Kontakt','Dobro došli u Jagodinu'),('newsletter','Newsletter','Prijavite se za novosti naše službe'),('podrzi-nas','Podrži nas','Podržite naš rad'),('mentorstvo','Mentorstvo','Mentorisanje vođa'),('resursi','Resursi','Materijali i linkovi za službe'),('slavljenje','Slavljenje','Pesme, akordi i materijali za tim')]
+sections=[('o-nama','O nama','Upoznajte našu crkvu'),('uzivo','Bogosluženje uživo','Budimo zajedno, gde god da ste'),('propovedi','Propovedi','Slušajte. Proučavajte. Rastite.'),('decja-sluzba','Dečja služba','Mali koraci. Velike istine.'),('omladinska-sluzba','Omladinska služba','Vera u svakodnevnom životu'),('duhovni-rast','Duhovni rast','Prostor za rast u Božijoj reči'),('biblioteka','Biblioteka','Dobri materijali. Na jednom mestu.'),('drugim-crkvama','Drugim crkvama','Resursi za zajedničko služenje'),('dogadjaji','Događaji','Vreme za zajedništvo'),('kontakt','Kontakt','Dobro došli u Jagodinu'),('newsletter','Newsletter','Prijavite se za novosti naše službe'),('podrzi-nas','Podrži nas','Podržite naš rad'),('mentorstvo','Mentorstvo','Mentorisanje vođa'),('resursi','Resursi','Materijali i linkovi za službe'),('slavljenje','Slavljenje','Pesme, akordi i materijali za tim'),('nedeljna-bogosluzenja','Nedeljna bogosluženja','Snimci nedeljnih službi'),('konferencije','Konferencije i predavanja','Predavanja, seminari i konferencije')]
 records=[]
 for f in (P/'content/posts').glob('*.json'):
  d=json.loads(f.read_text())
@@ -95,6 +95,34 @@ def latest(items,label,desc):
   return '<a class="latest-card" href="/objave/'+e(d['slug'])+'/"><span class="eyebrow">'+label+'</span><h3>'+e(d['title'])+'</h3><p>'+e(d.get('description',''))+'</p><b>Pročitajte više ↗</b></a>'
  return '<div class="latest-card"><span class="eyebrow">'+label+'</span><h3>Sadržaj je u pripremi.</h3><p>'+desc+'</p></div>'
 
+# Arhiva zavrsenih prenosa koju odrzava GitHub Actions.
+archive_path=P/'content/youtube-services.json'
+archive=json.loads(archive_path.read_text(encoding='utf-8')) if archive_path.exists() else []
+if not isinstance(archive,list): archive=[]
+
+def youtube_id(url):
+ from urllib.parse import urlparse,parse_qs
+ try:
+  parsed=urlparse(url)
+  if parsed.hostname in ('youtube.com','www.youtube.com','m.youtube.com'):
+   return parse_qs(parsed.query).get('v',[''])[0] if parsed.path=='/watch' else (parsed.path.split('/')[2] if parsed.path.startswith('/live/') else '')
+  if parsed.hostname in ('youtu.be','www.youtu.be'):return parsed.path.strip('/').split('/')[0]
+ except (TypeError,ValueError,IndexError):return ''
+ return ''
+
+def archive_cards():
+ existing={youtube_id(d.get('youtube','')) for d in records if d.get('section')=='propovedi'}
+ seen=set()
+ blocks=[]
+ for video in archive:
+  vid=video.get('id','')
+  if not re.fullmatch(r'[A-Za-z0-9_-]{11}',vid) or vid in seen or vid in existing:continue
+  seen.add(vid)
+  title=e(video.get('title','Nedeljno bogosluženje'))
+  date=e(video.get('date',''))
+  blocks.append('<a class="result" href="https://www.youtube.com/watch?v='+vid+'" target="_blank" rel="noopener noreferrer"><img src="https://i.ytimg.com/vi/'+vid+'/hqdefault.jpg" alt="Naslovna slika snimka" loading="lazy" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px"><span class="eyebrow">NEDELJNO BOGOSLUŽENJE · '+date+'</span><h3>'+title+'</h3><span>Gledaj snimak ↗</span></a>')
+ return '<div class="results">'+''.join(blocks)+'</div>' if blocks else ''
+
 def feature_image(key, label):
     value=home.get(key,'')
     if isinstance(value,str) and value.startswith('/media/') and not any(x in value for x in ('"', "'", '<', '>')):
@@ -111,7 +139,16 @@ body+='<section class="section entry-paths" aria-label="Bogosluženja, resursi i
 page('','Dobro došli','Evanđeoska crkva Jagodina. Propovedamo Jevanđelje o Isusu Hristu. Svi su dobrodošli. Bog voli sve ljude.',body)
 for slug,label,title in sections:
  b=head(label,title)
- if slug=='resursi':
+ if slug=='propovedi':
+  paths=[('/nedeljna-bogosluzenja/','Nedeljna bogosluženja','Završeni prenosi nedeljnih službi, automatski sa YouTube-a.','weekly_image'),('/konferencije/','Konferencije i predavanja','Predavanja i seminari koje uređujete kroz Pages CMS.','conference_image')]
+  b+='<section class="section resource-landing"><div class="resource-category-grid service-category-grid">'+''.join('<a class="resource-category" href="'+href+'"><strong>'+label+'</strong><p>'+desc+'</p><span>Otvori oblast →</span></a>' for href,label,desc,img in paths)+'</div></section>'
+ elif slug=='nedeljna-bogosluzenja':
+  manual=[d for d in records if d.get('section')=='propovedi']
+  b+='<p class="section"><a href="/propovedi/">← Nazad na Bogosluženja</a></p><section class="section library"><h2>Nedeljna bogosluženja</h2><p>Završeni javni prenosi sa našeg YouTube kanala. Novi snimci se automatski dodaju posle obrade na YouTube-u.</p>'+archive_cards()+(cards(manual) if manual else '')+'</section>'
+ elif slug=='konferencije':
+  manual=[d for d in records if d.get('section')=='konferencije']
+  b+='<p class="section"><a href="/propovedi/">← Nazad na Bogosluženja</a></p><section class="section library">'+(cards(manual) if manual else empty('Predavanja i konferencije dodajete kroz Pages CMS, izborom odeljka Konferencije i predavanja.'))+'</section>'
+ elif slug=='resursi':
   resource_categories=[('/omladinska-sluzba/','Omladinski rad','Biblijske pouke, aktivnosti i korisni linkovi za mlade.'),('/decja-sluzba/','Dečiji rad','Lekcije, aktivnosti i materijali za rad sa decom.'),('/slavljenje/','Slavljenje','Pesme, tekstovi, akordi i resursi za tim slavljenja.')]
   b+='<section class="section resource-landing"><div class="resource-category-grid">'+''.join('<a class="resource-category" href="'+href+'"><strong>'+name+'</strong><p>'+description+'</p><span>Otvori oblast →</span></a>' for href,name,description in resource_categories)+'</div></section>'
  elif slug=='newsletter':
@@ -119,7 +156,7 @@ for slug,label,title in sections:
  elif slug=='podrzi-nas':
   b+='<section class="section reading"><h2>Podrži nas</h2><p>Hvala što želite da podržite službu Evanđeoske crkve Jagodina. Informacije o mogućnostima podrške objavićemo nakon potvrde zvaničnih podataka za uplatu.</p><a class="button" href="mailto:'+e(s['email'])+'?subject=Podrska%20sluzbi">Kontaktirajte nas ↗</a></section>'
  elif slug=='mentorstvo':
-  b+='<section class="section mentorship-content"><div><p class="eyebrow">NAŠA VIZIJA</p><h2>'+e(s['mission'])+'</h2><p>'+e(home['mentorship_description'])+'</p></div><div class="panel"><h3>Pridružite se mentorstvu</h3><p>Pošaljite nam imejl i napišite da ste zainteresovani za mentorstvo. Kroz razgovor ćemo vam dati informacije o mogućnostima i narednim koracima.</p><a class="button" href="mailto:'+e(s['email'])+'?subject=Interesovanje%20za%20mentorstvo">Zainteresovan/a sam ↗</a><p class="note">Ovo dugme otvara vašu imejl aplikaciju. Nije automatska prijava u program.</p></div></section>'
+  b+='<section class="section mentorship-content"><div><p class="eyebrow">NAŠA VIZIJA</p><h2>'+e(s['mission'])+'</h2><p>'+e(home.get('mentorship_description','Mentorisanjem podižemo vođe za služenje.'))+'</p></div><div class="panel"><h3>Pridružite se mentorstvu</h3><p>Pošaljite nam imejl i napišite da ste zainteresovani za mentorstvo. Kroz razgovor ćemo vam dati informacije o mogućnostima i narednim koracima.</p><a class="button" href="mailto:'+e(s['email'])+'?subject=Interesovanje%20za%20mentorstvo">Zainteresovan/a sam ↗</a><p class="note">Ovo dugme otvara vašu imejl aplikaciju. Nije automatska prijava u program.</p></div></section>'
  elif slug=='kontakt':
   b+='<section class="section contact"><div><h2>Pišite nam</h2><p>Kontakt imejl crkve</p><a class="email" href="mailto:'+s['email']+'">'+s['email']+'</a><p>Za informacije o dolasku, terminima i materijalima.</p></div><div class="panel"><h3>Posetite nas</h3><p>'+e(s.get('address') or 'Tačna adresa će biti objavljena nakon potvrde.')+'</p><h3>Raspored bogosluženja</h3><p>'+e(s.get('schedule') or 'Termini će biti objavljeni nakon potvrde. Pre dolaska kontaktirajte crkvu.')+'</p></div></section>'
  elif slug=='o-nama':
