@@ -110,18 +110,66 @@ def youtube_id(url):
  except (TypeError,ValueError,IndexError):return ''
  return ''
 
-def archive_cards():
- existing={youtube_id(d.get('youtube','')) for d in records if d.get('section')=='propovedi'}
- seen=set()
- blocks=[]
- for video in archive:
-  vid=video.get('id','')
-  if not re.fullmatch(r'[A-Za-z0-9_-]{11}',vid) or vid in seen or vid in existing:continue
-  seen.add(vid)
-  title=e(video.get('title','Nedeljno bogosluženje'))
-  date=e(video.get('date',''))
-  blocks.append('<a class="result" href="https://www.youtube.com/watch?v='+vid+'" target="_blank" rel="noopener noreferrer"><img src="https://i.ytimg.com/vi/'+vid+'/hqdefault.jpg" alt="Naslovna slika snimka" loading="lazy" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px"><span class="eyebrow">NEDELJNO BOGOSLUŽENJE · '+date+'</span><h3>'+title+'</h3><span>Gledaj snimak ↗</span></a>')
- return '<div class="results">'+''.join(blocks)+'</div>' if blocks else ''
+def service_items():
+    """Jedna lista svih prenosa i rucnih objava, sortirana po datumu.
+
+    YouTube arhiva je izvor za emitovane prenose; rucni zapisi sa istim
+    YouTube ID-jem se ne prikazuju drugi put, ali ostaju u Pages CMS-u.
+    """
+    items=[]
+    seen=set()
+    for video in archive:
+        if not isinstance(video,dict):
+            continue
+        vid=video.get('id','')
+        if not isinstance(vid,str) or not re.fullmatch(r'[A-Za-z0-9_-]{11}',vid) or vid in seen:
+            continue
+        seen.add(vid)
+        items.append({'source':'youtube','date':str(video.get('date') or video.get('publishedAt') or '')[:10], 'video':video})
+    for d in records:
+        if d.get('section')!='propovedi':
+            continue
+        vid=youtube_id(d.get('youtube',''))
+        if vid and vid in seen:
+            continue
+        if vid:
+            seen.add(vid)
+        items.append({'source':'manual','date':str(d.get('date') or '')[:10], 'post':d})
+    items.sort(key=lambda item:item['date'],reverse=True)
+    return items
+
+def service_card(item):
+    if item['source']=='manual':
+        return cards([item['post']]).removeprefix('<div class="results">').removesuffix('</div>')
+    video=item['video']
+    vid=video['id']
+    title=e(video.get('title') or 'Završeni prenos uživo')
+    date=e(item['date'])
+    return ('<a class="result" href="https://www.youtube.com/watch?v='+vid+'" target="_blank" rel="noopener noreferrer">'
+            '<img src="https://i.ytimg.com/vi/'+vid+'/hqdefault.jpg" alt="Naslovna slika snimka" loading="lazy" '
+            'style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px">'
+            '<span class="eyebrow">PRENOS UŽIVO · '+date+'</span><h3>'+title+'</h3><span>Gledaj snimak ↗</span></a>')
+
+def service_cards(items):
+    return '<div class="results">'+''.join(service_card(item) for item in items)+'</div>' if items else empty('Snimci će se pojaviti kada budu dostupni.')
+
+def latest_service(items):
+    if not items:
+        return ''
+    item=items[0]
+    if item['source']=='youtube':
+        video=item['video']; vid=video['id']
+        title=e(video.get('title') or 'Završeni prenos uživo')
+        href='https://www.youtube.com/watch?v='+vid
+        image='https://i.ytimg.com/vi/'+vid+'/hqdefault.jpg'
+    else:
+        post=item['post']; title=e(post.get('title','Bogosluženje'))
+        href='/objave/'+e(post['slug'])+'/'
+        vid=youtube_id(post.get('youtube',''))
+        image='https://i.ytimg.com/vi/'+vid+'/hqdefault.jpg' if re.fullmatch(r'[A-Za-z0-9_-]{11}',vid) else ''
+    picture=('<img src="'+image+'" alt="Naslovna slika bogosluženja" loading="lazy" style="width:100%;max-width:480px;aspect-ratio:16/9;object-fit:cover;border-radius:12px">' if image else '')
+    return ('<section class="section latest-service"><p class="eyebrow">POSLEDNJI ZAVRŠENI PRENOS</p><h2>Najnovije bogosluženje</h2>'
+            '<a class="latest-card" href="'+href+'">'+picture+'<h3>'+title+'</h3><p>'+e(item['date'])+'</p><b>Pogledaj snimak ↗</b></a></section>')
 
 def feature_image(key, label):
     value=home.get(key,'')
@@ -136,6 +184,7 @@ features=[
 ]
 body+='<section class="section entry-paths" aria-label="Bogosluženja, resursi i mentorstvo"><div class="path-grid">'+''.join('<a class="path-card" href="'+href+'">'+feature_image(key,title)+'<span class="path-card-body"><strong>'+title+'</strong><span class="path-description">'+description+'</span><span class="path-arrow" aria-hidden="true">→</span></span></a>' for href,title,description,key in features)+'</div></section>'
 
+body+=latest_service(service_items())
 page('','Dobro došli','Evanđeoska crkva Jagodina. Propovedamo Jevanđelje o Isusu Hristu. Svi su dobrodošli. Bog voli sve ljude.',body)
 for slug,label,title in sections:
  b=head(label,title)
@@ -143,8 +192,7 @@ for slug,label,title in sections:
   paths=[('/nedeljna-bogosluzenja/','Nedeljna bogosluženja','Završeni prenosi nedeljnih službi, automatski sa YouTube-a.','weekly_image'),('/konferencije/','Konferencije i predavanja','Predavanja i seminari koje uređujete kroz Pages CMS.','conference_image')]
   b+='<section class="section resource-landing"><div class="resource-category-grid service-category-grid">'+''.join('<a class="resource-category" href="'+href+'"><strong>'+label+'</strong><p>'+desc+'</p><span>Otvori oblast →</span></a>' for href,label,desc,img in paths)+'</div></section>'
  elif slug=='nedeljna-bogosluzenja':
-  manual=[d for d in records if d.get('section')=='propovedi']
-  b+='<p class="section"><a href="/propovedi/">← Nazad na Bogosluženja</a></p><section class="section library"><h2>Nedeljna bogosluženja</h2><p>Završeni javni prenosi sa našeg YouTube kanala. Novi snimci se automatski dodaju posle obrade na YouTube-u.</p>'+archive_cards()+(cards(manual) if manual else '')+'</section>'
+  b+='<p class="section"><a href="/propovedi/">← Nazad na Bogosluženja</a></p><section class="section library"><h2>Arhiva prenosa uživo</h2><p>Svi javni završeni prenosi sa našeg YouTube kanala, poređani od najnovijeg prema najstarijem.</p>'+service_cards(service_items())+'</section>'
  elif slug=='konferencije':
   manual=[d for d in records if d.get('section')=='konferencije']
   b+='<p class="section"><a href="/propovedi/">← Nazad na Bogosluženja</a></p><section class="section library">'+(cards(manual) if manual else empty('Predavanja i konferencije dodajete kroz Pages CMS, izborom odeljka Konferencije i predavanja.'))+'</section>'
