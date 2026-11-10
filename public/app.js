@@ -10,3 +10,16 @@ imgs.forEach(img=>{img.addEventListener('load',()=>{img.dataset.ready='1';render
 function step(n){const ready=available();if(ready.length<2)return;current=(current+n+ready.length)%ready.length;render()}
 frame.querySelector('.photo-prev').addEventListener('click',()=>step(-1));frame.querySelector('.photo-next').addEventListener('click',()=>step(1));render();timer=setInterval(()=>step(1),4500);
 })();
+
+// Kopiranje bankarskih podataka bez spoljnog servisa.
+document.querySelectorAll('.donate-copy').forEach(btn => btn.addEventListener('click', async () => {
+  const value = btn.getAttribute('data-copy');
+  try {
+    await navigator.clipboard.writeText(value);
+    const original = btn.textContent;
+    btn.textContent = document.documentElement.lang === 'en' ? 'Copied!' : 'Kopirano!';
+    setTimeout(() => { btn.textContent = original; }, 1600);
+  } catch (_) {
+    btn.textContent = document.documentElement.lang === 'en' ? 'Select and copy' : 'Označi i kopiraj';
+  }
+}));

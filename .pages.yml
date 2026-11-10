@@ -99,6 +99,34 @@ content:
       - name: body
         label: "Sadržaj (običan tekst)"
         type: text
+  - name: newsletters
+    label: Newsletter — PDF izdanja
+    type: collection
+    path: content/newsletters
+    format: json
+    filename: "{fields.slug}.json"
+    fields:
+      - name: title
+        label: Naslov izdanja
+        type: string
+        required: true
+      - name: slug
+        label: URL oznaka (npr. newsletter-novembar-2026)
+        type: string
+        required: true
+      - name: date
+        label: Datum izdanja
+        type: date
+      - name: draft
+        label: Nacrt — ne prikazuj na sajtu
+        type: boolean
+        default: false
+      - name: file
+        label: PDF fajl (ako je manji)
+        type: file
+      - name: drive
+        label: Javni Google Drive link do PDF-a (za veće fajlove)
+        type: string
   - name: settings
     label: Podaci crkve
     type: file
@@ -135,6 +163,9 @@ content:
       - name: youtube
         label: "Zvanični YouTube kanal"
         type: text
+      - name: newsletter_form_url
+        label: Formspree URL za prijave (https://formspree.io/f/...)
+        type: string
       - name: live_url
         label: "YouTube link za prenos uživo"
         type: string
